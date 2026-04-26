@@ -71,7 +71,11 @@ Suggestions:
 ${feedback || "Strong resume structure."}
 `;
 
-  document.getElementById("result").innerText = finalReport;
+  document.getElementById("result").innerHTML =
+`<h2>Resume Score: ${score}/100</h2><br>
+<b>Detected Skills:</b><br>${foundSkills.join(", ") || "None"}<br><br>
+<b>Missing Skills:</b><br>${missingSkills.join(", ") || "None"}<br><br>
+<b>Suggestions:</b><br>${feedback || "Strong resume structure."}`;
 }
 
 function downloadReport(){
