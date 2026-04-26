@@ -1,90 +1,143 @@
+// script.js
+
 let finalReport = "";
 
 document.getElementById("fileInput").addEventListener("change", function(e){
 
-  let file = e.target.files[0];
+let file = e.target.files[0];
 
-  if(file){
-    let reader = new FileReader();
+if(file){
+let reader = new FileReader();
 
-    reader.onload = function(event){
-      document.getElementById("resumeText").value = event.target.result;
-    };
+reader.onload = function(event){
+document.getElementById("resumeText").value = event.target.result;
+};
 
-    reader.readAsText(file);
-  }
+reader.readAsText(file);
+}
 
 });
 
+function countWord(text, word){
+let regex = new RegExp("\\b" + word + "\\b","gi");
+let matches = text.match(regex);
+return matches ? matches.length : 0;
+}
+
 function analyzeResume(){
 
-  let text = document.getElementById("resumeText").value.toLowerCase();
+let resume = document.getElementById("resumeText").value.toLowerCase();
+let role = document.getElementById("jobRole").value;
+let jd = document.getElementById("jobDesc").value.toLowerCase();
 
-  let score = 0;
-  let feedback = "";
+let roleSkills = {
 
-  let requiredSections = ["education","skills","experience","project"];
-  let requiredSkills = ["html","css","javascript","react","python","sql","java"];
+frontend:["html","css","javascript","react","git","api","responsive"],
 
-  let foundSkills = [];
-  let missingSkills = [];
+java:["java","spring","sql","oop","hibernate","api"],
 
-  for(let section of requiredSections){
-    if(text.includes(section)){
-      score += 15;
-    } else {
-      feedback += "Missing section: " + section + "\n";
-    }
-  }
+python:["python","django","flask","sql","api","pandas"],
 
-  for(let skill of requiredSkills){
-    if(text.includes(skill)){
-      score += 5;
-      foundSkills.push(skill);
-    } else {
-      missingSkills.push(skill);
-    }
-  }
+data:["excel","sql","python","power bi","tableau"]
 
-  let words = text.split(/\s+/).length;
+};
 
-  if(words > 180){
-    score += 10;
-  } else {
-    feedback += "Resume content looks short\n";
-  }
+let skills = roleSkills[role];
 
-  if(score > 100) score = 100;
+if(jd.trim() !== ""){
+let extra = jd.split(/\W+/).filter(word => word.length > 3);
+skills = [...new Set([...skills,...extra])];
+}
 
-  document.getElementById("progressBar").style.width = score + "%";
+let found = [];
+let missing = [];
 
-  finalReport =
-`Resume Score: ${score}/100
+let score = 0;
 
-Detected Skills:
-${foundSkills.join(", ")}
+for(let skill of skills){
+
+let count = countWord(resume, skill);
+
+if(count > 0){
+found.push(skill + " (" + count + ")");
+score += Math.min(count * 6, 15);
+}
+else{
+missing.push(skill);
+}
+
+}
+
+let sections = ["education","skills","experience","project"];
+
+for(let sec of sections){
+if(resume.includes(sec)){
+score += 5;
+}
+}
+
+let words = resume.split(/\s+/).length;
+
+if(words > 180){
+score += 10;
+}
+
+if(score > 100) score = 100;
+
+document.getElementById("progressBar").style.width = score + "%";
+
+let color = "#ef4444";
+
+if(score >= 70) color = "#22c55e";
+else if(score >= 40) color = "#facc15";
+
+document.getElementById("progressBar").style.background = color;
+
+let verdict = "";
+
+if(score >= 80) verdict = "Excellent Match";
+else if(score >= 60) verdict = "Good Match";
+else if(score >= 40) verdict = "Average Match";
+else verdict = "Needs Improvement";
+
+finalReport =
+`ATS Match Score: ${score}%
+
+Status: ${verdict}
+
+Matched Skills:
+${found.join(", ") || "None"}
 
 Missing Skills:
-${missingSkills.join(", ")}
+${missing.join(", ") || "None"}
 
 Suggestions:
-${feedback || "Strong resume structure."}
+${missing.length === 0 ? "Excellent profile for selected role." : "Add missing skills, projects and align resume with job description."}
 `;
 
-  document.getElementById("result").innerHTML =
-`<h2>Resume Score: ${score}/100</h2><br>
-<b>Detected Skills:</b><br>${foundSkills.join(", ") || "None"}<br><br>
-<b>Missing Skills:</b><br>${missingSkills.join(", ") || "None"}<br><br>
-<b>Suggestions:</b><br>${feedback || "Strong resume structure."}`;
+document.getElementById("result").innerHTML =
+`<h2>ATS Match Score: ${score}%</h2>
+<b>Status:</b> ${verdict}<br><br>
+
+<b>Matched Skills:</b><br>
+${found.join(", ") || "None"}<br><br>
+
+<b>Missing Skills:</b><br>
+${missing.join(", ") || "None"}<br><br>
+
+<b>Suggestions:</b><br>
+${missing.length === 0 ? "Excellent profile for selected role." : "Add missing skills, projects and align resume with JD."}`;
+
 }
 
 function downloadReport(){
 
-  let blob = new Blob([finalReport], {type:"text/plain"});
+let blob = new Blob([finalReport], {type:"text/plain"});
 
-  let a = document.createElement("a");
+let a = document.createElement("a");
 
-  a.href = URL.createObjectURL(blob);
-  a.download = "resume_report.txt";
-  a.click();
+a.href = URL.createObjectURL(blob);
+a.download = "resume_report.txt";
+a.click();
+
 }

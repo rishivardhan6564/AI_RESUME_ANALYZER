@@ -1,28 +1,40 @@
+<!-- index.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>AI Resume Analyzer</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Resume Analyzer</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
 
-  <h1>AI Resume Analyzer</h1>
-  <p class="subtitle">Smart Resume Screening Tool</p>
+<h1>AI Resume Analyzer</h1>
+<p class="subtitle">ATS Style Role Based Resume Screening</p>
 
-  <input type="file" id="fileInput" accept=".txt">
+<select id="jobRole">
+<option value="frontend">Frontend Developer</option>
+<option value="java">Java Developer</option>
+<option value="python">Python Developer</option>
+<option value="data">Data Analyst</option>
+</select>
 
-  <textarea id="resumeText" placeholder="Paste resume text here..."></textarea>
+<textarea id="jobDesc" placeholder="Paste Job Description (Optional)"></textarea>
 
-  <button onclick="analyzeResume()">Analyze Resume</button>
-  <button onclick="downloadReport()">Download Report</button>
+<input type="file" id="fileInput" accept=".txt">
 
-  <div class="progress-box">
-    <div id="progressBar"></div>
-  </div>
+<textarea id="resumeText" placeholder="Paste Resume Text Here"></textarea>
 
-  <div id="result"></div>
+<button onclick="analyzeResume()">Analyze Resume</button>
+<button onclick="downloadReport()">Download Report</button>
+
+<div class="progress-box">
+<div id="progressBar"></div>
+</div>
+
+<div id="result"></div>
 
 </div>
 
