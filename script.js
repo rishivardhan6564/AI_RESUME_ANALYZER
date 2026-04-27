@@ -31,15 +31,10 @@ let role = document.getElementById("jobRole").value;
 let jd = document.getElementById("jobDesc").value.toLowerCase();
 
 let roleSkills = {
-
 frontend:["html","css","javascript","react","git","api","responsive"],
-
 java:["java","spring","sql","oop","hibernate","api"],
-
 python:["python","django","flask","sql","api","pandas"],
-
 data:["excel","sql","python","power bi","tableau"]
-
 };
 
 let skills = roleSkills[role];
@@ -51,57 +46,86 @@ skills = [...new Set([...skills,...extra])];
 
 let found = [];
 let missing = [];
-
-let score = 0;
+let keywordScore = 0;
 
 for(let skill of skills){
 
 let count = countWord(resume, skill);
 
 if(count > 0){
-found.push(skill + " (" + count + ")");
-score += Math.min(count * 6, 15);
-}
-else{
+found.push(skill);
+keywordScore += Math.min(count * 4, 6);
+}else{
 missing.push(skill);
 }
 
 }
 
+if(keywordScore > 30) keywordScore = 30;
+
+// Sections Score
 let sections = ["education","skills","experience","project"];
+let sectionScore = 0;
 
 for(let sec of sections){
-if(resume.includes(sec)){
-score += 5;
+if(resume.includes(sec)) sectionScore += 5;
 }
-}
+if(sectionScore > 20) sectionScore = 20;
 
+// Formatting Score
+let formattingScore = 0;
 let words = resume.split(/\s+/).length;
 
-if(words > 180){
-score += 10;
-}
+if(words > 180) formattingScore += 10;
+if(words < 800) formattingScore += 10;
 
-if(score > 100) score = 100;
+// Readability Score
+let readabilityScore = 0;
+if(resume.includes(",")) readabilityScore += 5;
+if(resume.includes(".")) readabilityScore += 5;
+if(words > 150) readabilityScore += 5;
 
-document.getElementById("progressBar").style.width = score + "%";
+// File Compatibility
+let fileScore = 15;
+
+let total =
+keywordScore +
+sectionScore +
+formattingScore +
+readabilityScore +
+fileScore;
+
+if(total > 100) total = 100;
+
+document.getElementById("progressBar").style.width = total + "%";
 
 let color = "#ef4444";
-
-if(score >= 70) color = "#22c55e";
-else if(score >= 40) color = "#facc15";
+if(total >= 70) color = "#22c55e";
+else if(total >= 40) color = "#facc15";
 
 document.getElementById("progressBar").style.background = color;
 
+document.getElementById("scoreCards").innerHTML =
+
+`<div class="card"><h3>Keyword Match</h3><p>${keywordScore}/30</p></div>
+
+<div class="card"><h3>Sections</h3><p>${sectionScore}/20</p></div>
+
+<div class="card"><h3>Formatting</h3><p>${formattingScore}/20</p></div>
+
+<div class="card"><h3>Readability</h3><p>${readabilityScore}/15</p></div>
+
+<div class="card"><h3>Compatibility</h3><p>${fileScore}/15</p></div>`;
+
 let verdict = "";
 
-if(score >= 80) verdict = "Excellent Match";
-else if(score >= 60) verdict = "Good Match";
-else if(score >= 40) verdict = "Average Match";
+if(total >= 80) verdict = "Excellent ATS Ready Resume";
+else if(total >= 60) verdict = "Good Resume";
+else if(total >= 40) verdict = "Average Resume";
 else verdict = "Needs Improvement";
 
 finalReport =
-`ATS Match Score: ${score}%
+`ATS Score: ${total}/100
 
 Status: ${verdict}
 
@@ -112,11 +136,13 @@ Missing Skills:
 ${missing.join(", ") || "None"}
 
 Suggestions:
-${missing.length === 0 ? "Excellent profile for selected role." : "Add missing skills, projects and align resume with job description."}
+${missing.length === 0 ? "Excellent fit for selected role." : "Add missing skills, improve formatting and align with job description."}
 `;
 
 document.getElementById("result").innerHTML =
-`<h2>ATS Match Score: ${score}%</h2>
+
+`<h2>Overall ATS Score: ${total}/100</h2>
+
 <b>Status:</b> ${verdict}<br><br>
 
 <b>Matched Skills:</b><br>
@@ -126,16 +152,14 @@ ${found.join(", ") || "None"}<br><br>
 ${missing.join(", ") || "None"}<br><br>
 
 <b>Suggestions:</b><br>
-${missing.length === 0 ? "Excellent profile for selected role." : "Add missing skills, projects and align resume with JD."}`;
+${missing.length === 0 ? "Excellent fit for selected role." : "Add missing skills, improve formatting and tailor resume to role."}`;
 
 }
 
 function downloadReport(){
 
 let blob = new Blob([finalReport], {type:"text/plain"});
-
 let a = document.createElement("a");
-
 a.href = URL.createObjectURL(blob);
 a.download = "resume_report.txt";
 a.click();
